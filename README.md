@@ -1,6 +1,7 @@
-# Machine Learning for Kids
+# Machine Learning for Kids (6-16yr old)
 
-## What is this?
+## This is currently being modify for tinyML, Tensorflow-lite, Sord and other machine learning framework and libraries
+## with a port to MicroPython + Zephyr RTOS to run embedded hardware like Quickfeahter (eFPGA+MCU) 
 
 This is the source code for the API and website behind [Machine Learning for Kids](https://machinelearningforkids.co.uk).
 
