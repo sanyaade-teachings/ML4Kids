@@ -3,7 +3,6 @@ import * as assert from 'assert';
 import { v1 as uuid } from 'uuid';
 import * as sinon from 'sinon';
 import * as conversation from '../../lib/training/conversation';
-import * as visualrecog from '../../lib/training/visualrecognition';
 import * as status from '../../lib/scratchx/status';
 import * as Types from '../../lib/db/db-types';
 import * as TrainingTypes from '../../lib/training/training-types';
@@ -30,6 +29,7 @@ describe('Scratchx - status', () => {
             assert.deepStrictEqual(statusObj, {
                 status : 0,
                 msg : 'Classifier not found',
+                type : 'sounds',
             });
         });
         it('should reject status calls for sound projects', async () => {
@@ -45,6 +45,7 @@ describe('Scratchx - status', () => {
             assert.deepStrictEqual(statusObj, {
                 status : 0,
                 msg : 'No models trained yet - only random answers can be chosen',
+                type : 'sounds',
             });
         });
 
@@ -62,6 +63,7 @@ describe('Scratchx - status', () => {
             assert.deepStrictEqual(statusObj, {
                 status : 0,
                 msg : 'Classifier not found',
+                type : 'imgtfjs',
             });
         });
         it('should reject status calls for imgtfjs projects', async () => {
@@ -77,6 +79,7 @@ describe('Scratchx - status', () => {
             assert.deepStrictEqual(statusObj, {
                 status : 0,
                 msg : 'No models trained yet - only random answers can be chosen',
+                type : 'imgtfjs',
             });
         });
 
@@ -120,6 +123,7 @@ describe('Scratchx - status', () => {
             assert.deepStrictEqual(statusObj, {
                 status : 0,
                 msg : 'No models trained yet - only random answers can be chosen',
+                type : 'text',
             });
         });
 
@@ -150,6 +154,7 @@ describe('Scratchx - status', () => {
             assert.deepStrictEqual(statusObj, {
                 status : 0,
                 msg : 'Model Non Existent',
+                type : 'text',
             });
         });
 
@@ -180,6 +185,7 @@ describe('Scratchx - status', () => {
             assert.deepStrictEqual(statusObj, {
                 status : 1,
                 msg : 'Model not ready yet',
+                type : 'text',
             });
         });
 
@@ -209,6 +215,7 @@ describe('Scratchx - status', () => {
             assert.deepStrictEqual(statusObj, {
                 status : 2,
                 msg : 'Ready',
+                type : 'text',
             });
         });
     });
@@ -229,6 +236,7 @@ describe('Scratchx - status', () => {
             assert.deepStrictEqual(statusObj, {
                 status : 2,
                 msg : 'No models trained yet - only random answers can be chosen',
+                type : 'numbers',
             });
         });
 
@@ -247,6 +255,7 @@ describe('Scratchx - status', () => {
             assert.deepStrictEqual(statusObj, {
                 status : 2,
                 msg : 'Status for TEST',
+                type : 'numbers',
             });
         });
 
@@ -256,28 +265,7 @@ describe('Scratchx - status', () => {
 
     describe('images projects', () => {
 
-        const testStatus: TrainingTypes.VisualClassifier = {
-            id : uuid(),
-            name : 'TEST PROJECT',
-            status : 'ready',
-            classifierid : uuid(),
-            credentialsid : '123',
-            created : new Date(),
-            expiry : new Date(),
-            url : 'conversation.url',
-        };
-        let getStatusStub: sinon.SinonStub<[TrainingTypes.BluemixCredentials, TrainingTypes.VisualClassifier],
-                                           Promise<TrainingTypes.VisualClassifier>>;
-
-        before(() => {
-            getStatusStub = sinon.stub(visualrecog, 'getStatus').resolves(testStatus);
-        });
-        after(() => {
-            getStatusStub.restore();
-        });
-
-
-        it('should return status 0 for untrained projects', async () => {
+        it('should return status 0 for image projects', async () => {
             const key: Types.ScratchKey = {
                 id : uuid(),
                 name : 'TEST',
@@ -290,113 +278,8 @@ describe('Scratchx - status', () => {
             assert.deepStrictEqual(statusObj, {
                 status : 0,
                 msg : 'No models trained yet - only random answers can be chosen',
-            });
-        });
-
-
-
-        it('should return status 0 for classifiers that have been deleted', async () => {
-            const key: Types.ScratchKey = {
-                id : uuid(),
-                name : 'TEST',
                 type : 'images',
-                projectid : uuid(),
-                classifierid : testStatus.classifierid,
-                credentials : {
-                    url : 'http',
-                    id : uuid(),
-                    username : 'user',
-                    password : 'pass',
-                    servicetype : 'conv',
-                    classid : '',
-                    credstype,
-                },
-                updated : new Date(),
-            };
-
-            testStatus.status = 'Non Existent';
-
-            const statusObj = await status.getStatus(key);
-            assert.deepStrictEqual(statusObj, {
-                status : 0,
-                msg : 'Model Non Existent',
             });
         });
-
-
-
-        it('should return status 1 for projects that are still training', async () => {
-            const key: Types.ScratchKey = {
-                id : uuid(),
-                name : 'TEST',
-                type : 'images',
-                projectid : uuid(),
-                classifierid : testStatus.classifierid,
-                credentials : {
-                    url : 'http',
-                    id : uuid(),
-                    username : 'user',
-                    password : 'pass',
-                    servicetype : 'conv',
-                    classid : '',
-                    credstype,
-                },
-                updated : new Date(),
-            };
-
-            testStatus.status = 'training';
-
-            const statusObj = await status.getStatus(key);
-            assert.deepStrictEqual(statusObj, {
-                status : 1,
-                msg : 'Model not ready yet',
-            });
-        });
-
-
-        it('should return status 2 for trained projects', async () => {
-            const key: Types.ScratchKey = {
-                id : uuid(),
-                name : 'TEST',
-                type : 'images',
-                projectid : uuid(),
-                classifierid : testStatus.classifierid,
-                credentials : {
-                    url : 'http',
-                    id : uuid(),
-                    username : 'user',
-                    password : 'pass',
-                    servicetype : 'conv',
-                    classid : '',
-                    credstype,
-                },
-                updated : new Date(),
-            };
-
-            testStatus.status = 'ready';
-
-            const statusObj = await status.getStatus(key);
-            assert.deepStrictEqual(statusObj, {
-                status : 2,
-                msg : 'Ready',
-            });
-        });
-
-        it('should return status 0 for untrained projects', async () => {
-            const key: Types.ScratchKey = {
-                id : uuid(),
-                name : 'TEST',
-                type : 'images',
-                projectid : uuid(),
-                updated : new Date(),
-            };
-
-            const statusObj = await status.getStatus(key);
-            assert.deepStrictEqual(statusObj, {
-                status : 0,
-                msg : 'No models trained yet - only random answers can be chosen',
-            });
-        });
-
     });
 });

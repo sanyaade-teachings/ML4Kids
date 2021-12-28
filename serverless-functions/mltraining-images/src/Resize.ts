@@ -9,6 +9,7 @@ import { OK, BAD_REQUEST, ERROR } from './StatusCodes';
 import * as MimeTypes from './MimeTypes';
 import { log } from './Debug';
 
+import * as fs from 'fs';
 
 // standard options for downloading images
 const REQUEST_OPTIONS = {
@@ -84,6 +85,8 @@ function requestAndResize(url: string, callback: (resp: HttpResponse) => void): 
                         return callback(handleError(err));
                     }
 
+                    fs.writeFileSync('/tmp/validate', buffer);
+
                     log('success');
                     callback(new HttpResponse(buffer.toString('base64'),
                                               OK, MimeTypes.ImagePng));
@@ -92,9 +95,14 @@ function requestAndResize(url: string, callback: (resp: HttpResponse) => void): 
 }
 
 
+const GOOGLE_IMAGE_HOST_REGEX = /^lh[1-9]\.google(?:usercontent)?\.com$/;
+function isGoogleFilesUrl(hostname: string): boolean {
+    return GOOGLE_IMAGE_HOST_REGEX.test(hostname);
+}
+
 
 function getHostName(req: request.Request): string {
-    if (req.host === 'lh3.googleusercontent.com') {
+    if (isGoogleFilesUrl(req.host)) {
         return 'Google';
     }
     return req.host;

@@ -62,8 +62,7 @@ describe('auth0 users', () => {
                 });
         });
 
-
-        it.skip('should fetch students', () => {
+        (process.env.TRAVIS ? it.skip : it)('should fetch students', () => {
             return users.getAllStudents(TESTTENANT, authtypes.ALL_STUDENTS)
                 .then((students) => {
                     assert(Array.isArray(students));
@@ -161,7 +160,7 @@ describe('auth0 users', () => {
     });
 
 
-    describe.skip('addStudentToGroup', () => {
+    (process.env.TRAVIS ? describe.skip : describe)('addStudentToGroup', () => {
 
         it('should add a student to a group', () => {
             let testuser: authtypes.UserCreds;
@@ -266,6 +265,7 @@ describe('auth0 users', () => {
 
         it('should fetch a count of students', () => {
             const stubs = {
+                getOauthToken : sinon.stub(auth0, 'getOauthToken').callsFake(mocks.getOauthToken.good),
                 getUserCountsStub : sinon.stub(auth0, 'getUserCounts').callsFake(mocks.getUserCounts),
             };
 
@@ -273,13 +273,14 @@ describe('auth0 users', () => {
                 .then((count) => {
                     assert.strictEqual(count, 5);
 
+                    stubs.getOauthToken.restore();
                     stubs.getUserCountsStub.restore();
                 });
         });
     });
 
 
-    describe.skip('getStudent()', () => {
+    (process.env.TRAVIS ? describe.skip : describe)('getStudent()', () => {
 
         it('should check the tenant is correct', async () => {
             const newStudent = await users.createStudent(TESTTENANT, '104' + randomstring.generate({ length : 6 }));
@@ -317,7 +318,7 @@ describe('auth0 users', () => {
     });
 
 
-    describe.skip('addGroupToClass', () => {
+    (process.env.TRAVIS ? describe.skip : describe)('addGroupToClass', () => {
 
         it('should add a group to an empty class', async () => {
             const EMAIL = 'myteacher@testing.com';
@@ -541,7 +542,7 @@ describe('auth0 users', () => {
     });
 
 
-    describe.skip('getTeacher()', () => {
+    (process.env.TRAVIS ? describe.skip : describe)('getTeacher()', () => {
 
         it('should create and fetch a teacher', async () => {
             const tenant = randomstring.generate(10);
@@ -567,7 +568,7 @@ describe('auth0 users', () => {
     });
 
 
-    describe.skip('createStudent()', () => {
+    (process.env.TRAVIS ? describe.skip : describe)('createStudent()', () => {
 
         it('should create a student', async () => {
             const newStudent = await users.createStudent(TESTTENANT, '141' + randomstring.generate({ length : 6 }));

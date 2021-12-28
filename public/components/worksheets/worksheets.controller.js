@@ -107,6 +107,7 @@
             'WORKSHEETS.JUDGEABOOK.TITLE', 'WORKSHEETS.JUDGEABOOK.SUMMARY', 'WORKSHEETS.JUDGEABOOK.DESCRIPTION',
             'WORKSHEETS.JUDGEABOOK.WORKSHEET_1.DESCRIPTION', 'WORKSHEETS.JUDGEABOOK.WORKSHEET_1.URL',
             'WORKSHEETS.JUDGEABOOK.WORKSHEET_2.DESCRIPTION', 'WORKSHEETS.JUDGEABOOK.WORKSHEET_2.URL',
+            'WORKSHEETS.JUDGEABOOK.WORKSHEET_3.DESCRIPTION', 'WORKSHEETS.JUDGEABOOK.WORKSHEET_3.URL',
             'WORKSHEETS.JUDGEABOOK.TEACHERSNOTES_URL',
 
             'WORKSHEETS.FOOLED.TITLE', 'WORKSHEETS.FOOLED.SUMMARY', 'WORKSHEETS.FOOLED.DESCRIPTION',
@@ -185,7 +186,11 @@
 
             'WORKSHEETS.HANDGESTURES.TITLE', 'WORKSHEETS.HANDGESTURES.SUMMARY', 'WORKSHEETS.HANDGESTURES.DESCRIPTION',
             'WORKSHEETS.HANDGESTURES.WORKSHEET_1.URL',
-            'WORKSHEETS.HANDGESTURES.TEACHERSNOTES_URL'
+            'WORKSHEETS.HANDGESTURES.TEACHERSNOTES_URL',
+
+            'WORKSHEETS.EXPLAINABILITY.TITLE', 'WORKSHEETS.EXPLAINABILITY.SUMMARY', 'WORKSHEETS.EXPLAINABILITY.DESCRIPTION',
+            'WORKSHEETS.EXPLAINABILITY.WORKSHEET_1.URL',
+            'WORKSHEETS.EXPLAINABILITY.TEACHERSNOTES_URL'
         ]).then(function (translations) {
             vm.worksheets = [
                 {
@@ -637,7 +642,7 @@
                     description : translations['WORKSHEETS.JUDGEABOOK.DESCRIPTION'],
                     difficulty : 'Intermediate',
                     type : 'images',
-                    maketypes : [ 'scratch3' ],
+                    maketypes : [ 'scratch3', 'appinventor' ],
                     image : 'static/images/project-judgeabook.png',
                     tags : [ 'image classification', 'supervised learning' ],
                     teachersnotes : translations['WORKSHEETS.JUDGEABOOK.TEACHERSNOTES_URL'],
@@ -649,6 +654,10 @@
                         {
                             description : translations['WORKSHEETS.JUDGEABOOK.WORKSHEET_2.DESCRIPTION'],
                             worksheet : translations['WORKSHEETS.JUDGEABOOK.WORKSHEET_2.URL']
+                        },
+                        {
+                            description : translations['WORKSHEETS.JUDGEABOOK.WORKSHEET_3.DESCRIPTION'],
+                            worksheet : translations['WORKSHEETS.JUDGEABOOK.WORKSHEET_3.URL']
                         }
                     ]
                 },
@@ -697,6 +706,22 @@
                     downloads : [
                         {
                             worksheet : translations['WORKSHEETS.JARGONBUSTER.WORKSHEET_1.URL']
+                        }
+                    ]
+                },
+                {
+                    title : translations['WORKSHEETS.EXPLAINABILITY.TITLE'],
+                    summary : translations['WORKSHEETS.EXPLAINABILITY.SUMMARY'],
+                    description : translations['WORKSHEETS.EXPLAINABILITY.DESCRIPTION'],
+                    difficulty : 'Intermediate',
+                    type : 'images',
+                    maketypes : [ 'scratch3' ],
+                    image : 'static/images/project-explainability.png',
+                    tags : [ 'image recognition', 'explainable AI', 'xai' ],
+                    teachersnotes : translations['WORKSHEETS.EXPLAINABILITY.TEACHERSNOTES_URL'],
+                    downloads : [
+                        {
+                            worksheet : translations['WORKSHEETS.EXPLAINABILITY.WORKSHEET_1.URL']
                         }
                     ]
                 },

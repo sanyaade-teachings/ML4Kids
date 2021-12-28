@@ -2,7 +2,6 @@
 import * as Types from '../db/db-types';
 import * as TrainingTypes from '../training/training-types';
 import * as conversation from '../training/conversation';
-import * as visualrecog from '../training/visualrecognition';
 import * as ScratchTypes from './scratchx-types';
 import loggerSetup from '../utils/logger';
 
@@ -16,6 +15,7 @@ export function getStatus(scratchKey: Types.ScratchKey): Promise<ScratchTypes.St
         return Promise.resolve({
             status : scratchKey.type === 'numbers' ? 2 : 0,
             msg : 'No models trained yet - only random answers can be chosen',
+            type : scratchKey.type,
         });
     }
 
@@ -23,7 +23,7 @@ export function getStatus(scratchKey: Types.ScratchKey): Promise<ScratchTypes.St
     case 'text':
         return getTextClassifierStatus(scratchKey);
     case 'images':
-        return getImageClassifierStatus(scratchKey);
+        return getImageClassifierStatus();
     case 'numbers':
         return getNumbersClassifierStatus(scratchKey);
     case 'sounds':
@@ -56,80 +56,44 @@ async function getTextClassifierStatus(scratchKey: Types.ScratchKey): Promise<Sc
             return {
                 status : 2,
                 msg : 'Ready',
+                type : 'text',
             };
         }
         else if (classifierWithStatus.status === 'Training') {
             return {
                 status : 1,
                 msg : 'Model not ready yet',
+                type : 'text',
             };
         }
 
         return {
             status : 0,
             msg : 'Model ' + classifierWithStatus.status,
+            type : 'text',
         };
     }
 
     return {
         status : 0,
         msg : 'Classifier not found',
+        type : 'text',
     };
 }
 
 
 
-async function getImageClassifierStatus(scratchKey: Types.ScratchKey): Promise<ScratchTypes.Status> {
-
-    if (scratchKey.credentials && scratchKey.classifierid) {
-        const credentials: TrainingTypes.BluemixCredentials = scratchKey.credentials;
-        const classifier: TrainingTypes.VisualClassifier = {
-            id : 'classifierid',
-            name : scratchKey.name,
-            classifierid : scratchKey.classifierid,
-            credentialsid : credentials.id,
-            created: new Date(),
-            expiry: new Date(),
-            url: scratchKey.credentials.url + '/v3/classifiers/' + scratchKey.classifierid,
-        };
-
-        const classifierWithStatus = await visualrecog.getStatus(credentials, classifier);
-        if (classifierWithStatus.status === 'ready') {
-            return {
-                status : 2,
-                msg : 'Ready',
-            };
-        }
-        else if (classifierWithStatus.status === 'training') {
-            return {
-                status : 1,
-                msg : 'Model not ready yet',
-            };
-        }
-
-        return {
-            status : 0,
-            msg : 'Model ' + classifierWithStatus.status,
-        };
-    }
-
-    return {
-        status : 0,
-        msg : 'Classifier not found',
-    };
+function getImageClassifierStatus(): Promise<ScratchTypes.Status> {
+    return Promise.resolve({ status : 0, msg : 'Classifier not found', type : 'images' });
 }
-
-
-
 function getNumbersClassifierStatus(scratchKey: Types.ScratchKey): Promise<ScratchTypes.Status> {
-    return Promise.resolve({ status : 2, msg : 'Status for ' + scratchKey.name });
+    return Promise.resolve({ status : 2, msg : 'Status for ' + scratchKey.name, type : 'numbers' });
 }
-
 function getSoundClassifierStatus(scratchKey: Types.ScratchKey): Promise<ScratchTypes.Status> {
     log.error({ scratchKey }, 'Unexpected attempt to get status of sound model');
-    return Promise.resolve({ status : 0, msg : 'Classifier not found' });
+    return Promise.resolve({ status : 0, msg : 'Classifier not found', type : 'sounds' });
 }
 function getImageTfjsClassifierStatus(scratchKey: Types.ScratchKey): Promise<ScratchTypes.Status> {
     log.error({ scratchKey }, 'Unexpected attempt to get status of browser model');
-    return Promise.resolve({ status : 0, msg : 'Classifier not found' });
+    return Promise.resolve({ status : 0, msg : 'Classifier not found', type : 'imgtfjs' });
 }

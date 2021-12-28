@@ -1,15 +1,12 @@
 // external dependencies
 import * as _ from 'lodash';
-import * as fs from 'fs';
 import * as httpStatus from 'http-status';
 // local dependencies
 import * as store from '../db/store';
 import * as conversation from '../training/conversation';
-import * as visualrecog from '../training/visualrecognition';
 import * as numberService from '../training/numbers';
 import * as Types from '../db/db-types';
 import * as TrainingTypes from '../training/training-types';
-import * as base64decode from '../utils/base64decode';
 import loggerSetup from '../utils/logger';
 
 const log = loggerSetup();
@@ -61,48 +58,6 @@ async function classifyText(key: Types.ScratchKey, text: string): Promise<Traini
 
 
 
-async function classifyImage(key: Types.ScratchKey, base64imagedata: string): Promise<TrainingTypes.Classification[]> {
-    if (!base64imagedata || typeof base64imagedata !== 'string' || base64imagedata.trim().length === 0) {
-        log.warn({ base64imagedata, type : typeof base64imagedata, func : 'classifyImage' }, 'Missing data');
-        throw new Error('Missing data');
-    }
-
-    if (key.classifierid && key.credentials) {
-        const imagefile = await base64decode.run(base64imagedata);
-
-        try {
-            const resp = await visualrecog.testClassifierFile(key.credentials,
-                                                              key.classifierid,
-                                                              key.updated,
-                                                              key.projectid,
-                                                              imagefile);
-
-            if (resp.length > 0) {
-                return resp;
-            }
-        }
-        finally {
-            fs.unlink(imagefile, logError);
-        }
-    }
-
-    // we don't have an image classifier yet, or we didn't get any useful
-    //  output from the image classifier.
-    // Either way, we resort to random
-    const project = await store.getProject(key.projectid);
-    if (!project) {
-        throw new Error('Project not found');
-    }
-    return chooseLabelsAtRandom(project);
-}
-
-
-function logError(err?: Error | null) {
-    if (err) {
-        log.error({ err }, 'Error when deleting image file');
-    }
-}
-
 /**
  * Parses the provided string as a number if it can be.
  *  If that fails (returns NaN), it returns the original string.
@@ -112,6 +67,14 @@ function safeParseFloat(str: string): any {
     return isNaN(val) ? str : val;
 }
 
+function safeJsonStringify(obj: object): string {
+    try {
+        return JSON.stringify(obj);
+    }
+    catch (err) {
+        return err.message;
+    }
+}
 
 
 async function classifyNumbers(key: Types.ScratchKey, numbers: string[]): Promise<TrainingTypes.Classification[]> {
@@ -142,7 +105,7 @@ async function classifyNumbers(key: Types.ScratchKey, numbers: string[]): Promis
             log.warn({ err, numbers }, 'Failed to test numbers classifier');
         }
         else {
-            log.error({ err, numbers }, 'Failed to test numbers classifier');
+            log.error({ err, numbers, numbersjson : safeJsonStringify(numbers) }, 'Failed to test numbers classifier');
         }
     }
 
@@ -162,7 +125,7 @@ async function classifySound(key: Types.ScratchKey): Promise<TrainingTypes.Class
 }
 
 async function classifyImageTfjs(key: Types.ScratchKey): Promise<TrainingTypes.Classification[]> {
-    log.error({ key }, 'Unexpected attempt to test browser-hosted model');
+    log.warn({ key }, 'Unexpected attempt to test browser-hosted model');
     const err: any = new Error('Classification for this project is only available in the browser');
     err.statusCode = 400;
     throw err;
@@ -175,13 +138,12 @@ export function classify(scratchKey: Types.ScratchKey, data: any): Promise<Train
     switch (scratchKey.type) {
     case 'text':
         return classifyText(scratchKey, data as string);
-    case 'images':
-        return classifyImage(scratchKey, data as string);
     case 'numbers':
         return classifyNumbers(scratchKey, data as string[]);
     case 'sounds':
         return classifySound(scratchKey);
     case 'imgtfjs':
+    case 'images':
         return classifyImageTfjs(scratchKey);
     }
 }
